@@ -45,7 +45,7 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 SQLALCHEMY_DATABASE_URI = conf.get('core', 'SQL_ALCHEMY_CONN')
 
 # Flask-WTF flag for CSRF
-CSRF_ENABLED = conf.get('webserver', 'RBAC_CSRF_ENABLED')
+CSRF_ENABLED = conf.get('webserver_fab', 'CSRF_ENABLED')
 
 # ----------------------------------------------------
 # AUTHENTICATION CONFIG
