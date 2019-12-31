@@ -635,8 +635,11 @@ if conf.getboolean('webserver', 'rbac'):
 
     if not os.path.isfile(WEBSERVER_CONFIG):
         log.info('Creating new FAB webserver config file in: %s', WEBSERVER_CONFIG)
-        with open(WEBSERVER_CONFIG, 'w') as f:
-            f.write(DEFAULT_WEBSERVER_CONFIG)
+    else:
+        log.info('Updating FAB webserver config file')
+
+    with open(WEBSERVER_CONFIG, 'w') as f:
+        f.write(DEFAULT_WEBSERVER_CONFIG)
 
 if conf.getboolean('core', 'unit_test_mode'):
     conf.load_test_config()

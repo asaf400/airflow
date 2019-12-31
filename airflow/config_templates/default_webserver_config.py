@@ -18,13 +18,26 @@
 # under the License.
 """Default configuration for the Airflow webserver"""
 import os
-from flask_appbuilder.security.manager import AUTH_DB
-# from flask_appbuilder.security.manager import AUTH_LDAP
-# from flask_appbuilder.security.manager import AUTH_OAUTH
-# from flask_appbuilder.security.manager import AUTH_OID
-# from flask_appbuilder.security.manager import AUTH_REMOTE_USER
+from base64 import b64decode
+import json
 
 from airflow.configuration import conf
+
+import importlib
+
+
+def retrieve_attr(module_name, class_name):
+    """Return a class instance from a string reference"""
+    try:
+        module_ = importlib.import_module(module_name)
+        try:
+            class_ = getattr(module_, class_name)
+        except AttributeError:
+            print('Attribute \'{}\' does not exist for module \'{}\''.format(class_name, module_name))
+    except ImportError:
+        print('Module \'{}\' does not exist'.format(module_name))
+    return class_ or None
+
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 
@@ -32,13 +45,13 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 SQLALCHEMY_DATABASE_URI = conf.get('core', 'SQL_ALCHEMY_CONN')
 
 # Flask-WTF flag for CSRF
-CSRF_ENABLED = True
+CSRF_ENABLED = conf.get('webserver', 'RBAC_CSRF_ENABLED')
 
 # ----------------------------------------------------
 # AUTHENTICATION CONFIG
 # ----------------------------------------------------
 # For details on how to set up each of the following authentication, see
-# http://flask-appbuilder.readthedocs.io/en/latest/security.html# authentication-methods
+# http://flask-appbuilder.readthedocs.io/en/latest/security.html#authentication-methods
 # for details.
 
 # The authentication type
@@ -47,19 +60,19 @@ CSRF_ENABLED = True
 # AUTH_LDAP : Is for LDAP
 # AUTH_REMOTE_USER : Is for using REMOTE_USER from web server
 # AUTH_OAUTH : Is for OAuth
-AUTH_TYPE = AUTH_DB
+AUTH_TYPE = retrieve_attr('flask_appbuilder.security.manager', conf.get('webserver_fab', 'AUTH_TYPE'))
 
 # Uncomment to setup Full admin role name
-# AUTH_ROLE_ADMIN = 'Admin'
+AUTH_ROLE_ADMIN = conf.get('webserver_fab', 'AUTH_ROLE_ADMIN')
 
 # Uncomment to setup Public role name, no authentication needed
-# AUTH_ROLE_PUBLIC = 'Public'
+AUTH_ROLE_PUBLIC = conf.get('webserver_fab', 'AUTH_ROLE_PUBLIC')
 
 # Will allow user self registration
-# AUTH_USER_REGISTRATION = True
+AUTH_USER_REGISTRATION = conf.get('webserver_fab', 'AUTH_USER_REGISTRATION')
 
 # The default user self registration role
-# AUTH_USER_REGISTRATION_ROLE = "Public"
+AUTH_USER_REGISTRATION_ROLE = conf.get('webserver_fab', 'AUTH_USER_REGISTRATION_ROLE')
 
 # When using OAuth Auth, uncomment to setup provider(s) info
 # Google OAuth example:
@@ -80,9 +93,24 @@ AUTH_TYPE = AUTH_DB
 #             'consumer_secret': SECRET_KEY,
 #         }
 # }]
+if conf.get('webserver_fab', 'OAUTH_PROVIDERS'):
+    try:
+        OAUTH_PROVIDERS = json.loads(b64decode(conf.get('webserver_fab', 'OAUTH_PROVIDERS')).decode('utf-8'))
+    except Exception as e:
+        print(
+            "ERROR: OAUTH_PROVIDERS couldn't not be read, ensure valid json array utf-8 string encoded in base64\n}".format(
+                e.messsage))
 
 # When using LDAP Auth, setup the ldap server
-# AUTH_LDAP_SERVER = "ldap://ldapserver.new"
+AUTH_LDAP_SERVER = conf.get('webserver_fab', 'AUTH_LDAP_SERVER')
+
+if conf.get('webserver_fab', 'OPENID_PROVIDERS'):
+    try:
+        OPENID_PROVIDERS = json.loads(b64decode(conf.get('webserver_fab', 'OPENID_PROVIDERS')).decode('utf-8'))
+    except Exception as e:
+        print(
+            "ERROR: OPENID_PROVIDERS couldn't not be read, ensure valid json array utf-8 string encoded in base64\n}".format(
+                e.messsage))
 
 # When using OpenID Auth, uncomment to setup OpenID providers.
 # example for OpenID authentication
