@@ -92,6 +92,7 @@ class CompileAssets(Command):
 
     # noinspection PyMethodMayBeStatic
     def run(self):
+        print("Running ./airflow/www_rbac/compile_assets.sh")
         subprocess.call('./airflow/www_rbac/compile_assets.sh')
 
 
