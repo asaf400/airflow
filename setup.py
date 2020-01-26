@@ -238,7 +238,7 @@ password = [
     'flask-bcrypt>=0.7.1',
 ]
 pinot = ['pinotdb==0.1.1']
-postgres = ['psycopg2>=2.7.4,<2.8']
+postgres = ['psycopg2-binary>=2.7.4,<2.8']
 qds = ['qds-sdk>=1.10.4']
 rabbitmq = ['librabbitmq>=1.6.1']
 redis = ['redis~=3.2']
@@ -367,7 +367,6 @@ def do_setup():
             'graphviz>=0.12',
             'gunicorn>=19.5.0, <20.0',
             'iso8601>=0.1.12',
-            'json-merge-patch==0.2',
             'jinja2>=2.10.1, <2.11.0',
             'lazy_object_proxy~=1.3',
             'markdown>=2.5.2, <3.0',
