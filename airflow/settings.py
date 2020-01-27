@@ -89,25 +89,29 @@ class AllowListValidator:
 
 class SafeStatsdLogger:
 
-    def __init__(self, statsd_client, allow_list_validator=AllowListValidator()):
+    def __init__(self, statsd_client, allow_list_validator=AllowListValidator(), tags):
         self.statsd = statsd_client
         self.allow_list_validator = allow_list_validator
+        self.tags = tags
 
     def incr(self, stat, count=1, rate=1):
         if self.allow_list_validator.test(stat):
-            return self.statsd.incr(stat, count, rate)
+            return self.statsd.incr(_parseStat(stat), count, rate)
 
     def decr(self, stat, count=1, rate=1):
         if self.allow_list_validator.test(stat):
-            return self.statsd.decr(stat, count, rate)
+            return self.statsd.decr(_parseStat(stat), count, rate)
 
     def gauge(self, stat, value, rate=1, delta=False):
         if self.allow_list_validator.test(stat):
-            return self.statsd.gauge(stat, value, rate, delta)
+            return self.statsd.gauge(_parseStat(stat), value, rate, delta)
 
     def timing(self, stat, dt):
         if self.allow_list_validator.test(stat):
-            return self.statsd.timing(stat, dt)
+            return self.statsd.timing(_parseStat(stat), dt)
+
+    def _parseStat(stat):
+        return "{},{}".format(stat, ','.join(self.tags))
 
 
 Stats = DummyStatsLogger  # type: Any
@@ -121,8 +125,15 @@ if conf.getboolean('scheduler', 'statsd_on'):
         prefix=conf.get('scheduler', 'statsd_prefix'))
 
     allow_list_validator = AllowListValidator(conf.get('scheduler', 'statsd_allow_list', fallback=None))
+    tags = []
+    conf_tags = conf.get('scheduler', 'statsd_tags').split(',')
+    
+    for tag in conf_tags:
+        tag_value = os.environ.get(tag)
+        if tag_value:
+            tags.append("{}={}".format(tag, tag_value ))
 
-    Stats = SafeStatsdLogger(statsd, allow_list_validator)
+    Stats = SafeStatsdLogger(statsd, allow_list_validator, tags)
 else:
     Stats = DummyStatsLogger
 
