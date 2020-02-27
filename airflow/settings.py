@@ -23,6 +23,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import atexit
+import json
 import logging
 import os
 import pendulum
@@ -34,7 +35,6 @@ from sqlalchemy.orm import scoped_session, sessionmaker
 from sqlalchemy.pool import NullPool
 
 from airflow.configuration import conf, AIRFLOW_HOME, WEBSERVER_CONFIG  # NOQA F401
-from airflow.contrib.kubernetes.pod import Pod
 from airflow.logging_config import configure_logging
 from airflow.utils.sqlalchemy import setup_event_handlers
 
@@ -163,6 +163,9 @@ LOGGING_CLASS_PATH = None
 engine = None
 Session = None
 
+# The JSON library to use for DAG Serialization and De-Serialization
+json = json
+
 
 def policy(task_instance):
     """
@@ -188,10 +191,9 @@ def policy(task_instance):
         pool.
     * ...
     """
-    pass
 
 
-def pod_mutation_hook(pod):  # type: (Pod) -> None
+def pod_mutation_hook(pod):
     """
     This setting allows altering ``Pod`` objects before they are passed to
     the Kubernetes client by the ``PodLauncher`` for scheduling.
@@ -203,7 +205,6 @@ def pod_mutation_hook(pod):  # type: (Pod) -> None
     This could be used, for instance, to add sidecar or init containers
     to every worker pod launched by KubernetesExecutor or KubernetesPodOperator.
     """
-    pass
 
 
 def configure_vars():
@@ -341,7 +342,6 @@ def configure_action_logging():
     module
     :rtype: None
     """
-    pass
 
 
 def prepare_syspath():
@@ -403,3 +403,12 @@ WEB_COLORS = {'LIGHTBLUE': '#4d9de0',
 
 # Used by DAG context_managers
 CONTEXT_MANAGER_DAG = None
+
+# If store_serialized_dags is True, scheduler writes serialized DAGs to DB, and webserver
+# reads DAGs from DB instead of importing from files.
+STORE_SERIALIZED_DAGS = conf.getboolean('core', 'store_serialized_dags', fallback=False)
+
+# Updating serialized DAG can not be faster than a minimum interval to reduce database
+# write rate.
+MIN_SERIALIZED_DAG_UPDATE_INTERVAL = conf.getint(
+    'core', 'min_serialized_dag_update_interval', fallback=30)
