@@ -489,7 +489,7 @@ def do_setup():
             'python-dateutil>=2.3, <3',
             'requests>=2.20.0, <3',
             'setproctitle>=1.1.8, <2',
-            'sqlalchemy~=1.3',
+            'sqlalchemy==1.3.15',
             'sqlalchemy_jsonfield==0.8.0;python_version<"3.5"',
             'sqlalchemy_jsonfield~=0.9;python_version>="3.5"',
             'tabulate>=0.7.5, <0.9',
