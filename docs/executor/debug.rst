@@ -49,4 +49,18 @@ It will run a backfill job:
 2. Setup ``AIRFLOW__CORE__EXECUTOR=DebugExecutor`` in run configuration of your IDE. In
    this step you should also setup all environment variables required by your DAG.
 
+   **Please Note**:
+
+   The DB you are using Should already be initialized before debugging the DAG,
+   this can be achieved by the cli command 'airflow initdb' on first 'boot' of the environment
+   or by adding the following piece of code right after entering main, and before the call for dag.clear:
+
+.. code-block:: python
+  if __name__ == '__main__':
+    from airflow.bin import cli
+    cli.initdb(tuple())
+    dag.clear(reset_dag_runs=True)
+    dag.run()
+
 3. Run / debug the DAG file.
+

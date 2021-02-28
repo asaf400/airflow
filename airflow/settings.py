@@ -90,26 +90,31 @@ class AllowListValidator:
 
 class SafeStatsdLogger:
 
-    def __init__(self, statsd_client, allow_list_validator=AllowListValidator()):
+    def __init__(self, statsd_client, allow_list_validator=AllowListValidator(), tags=None):
         self.statsd = statsd_client
         self.allow_list_validator = allow_list_validator
+        self.tags = tags
 
     def incr(self, stat, count=1, rate=1):
         if self.allow_list_validator.test(stat):
-            return self.statsd.incr(stat, count, rate)
+            return self.statsd.incr(self._parse_stat(stat), count, rate)
 
     def decr(self, stat, count=1, rate=1):
         if self.allow_list_validator.test(stat):
-            return self.statsd.decr(stat, count, rate)
+            return self.statsd.decr(self._parse_stat(stat), count, rate)
 
     def gauge(self, stat, value, rate=1, delta=False):
         if self.allow_list_validator.test(stat):
-            return self.statsd.gauge(stat, value, rate, delta)
+            return self.statsd.gauge(self._parse_stat(stat), value, rate, delta)
 
     def timing(self, stat, dt):
         if self.allow_list_validator.test(stat):
-            return self.statsd.timing(stat, dt)
+            return self.statsd.timing(self._parse_stat(stat), dt)
 
+    def _parse_stat(self, stat):
+        if self.tags:
+            return "{},{}".format(stat, ','.join(self.tags))
+        return stat
 
 Stats = DummyStatsLogger  # type: Any
 
@@ -122,8 +127,15 @@ if conf.getboolean('scheduler', 'statsd_on'):
         prefix=conf.get('scheduler', 'statsd_prefix'))
 
     allow_list_validator = AllowListValidator(conf.get('scheduler', 'statsd_allow_list', fallback=None))
+    tags = []
+    conf_tags = conf.get('scheduler', 'statsd_tags').split(',')
 
-    Stats = SafeStatsdLogger(statsd, allow_list_validator)
+    for tag in conf_tags:
+        tag_value = os.environ.get(tag)
+        if tag_value:
+            tags.append("{}={}".format(tag, tag_value ))
+
+    Stats = SafeStatsdLogger(statsd, allow_list_validator, tags)
 else:
     Stats = DummyStatsLogger
 
@@ -444,3 +456,4 @@ STORE_DAG_CODE = conf.getboolean("core", "store_dag_code", fallback=STORE_SERIAL
 # to get all the logs from the print & log statements in the DAG files before a task is run
 # The handlers are restored after the task completes execution.
 DONOT_MODIFY_HANDLERS = conf.getboolean('logging', 'donot_modify_handlers', fallback=False)
+

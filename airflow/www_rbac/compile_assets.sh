@@ -23,7 +23,9 @@ if [[ -d airflow/www_rbac/static/dist ]]; then
   rm -f airflow/www_rbac/static/dist/*
 fi
 
+echo "./Running airflow/www_rbac/compile_assets.sh"
 cd airflow/www_rbac/
 yarn install --frozen-lockfile
 yarn run build
 cd ../..
+
