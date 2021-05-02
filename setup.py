@@ -548,9 +548,10 @@ EXTRAS_REQUIREMENTS = {
 INSTALL_REQUIREMENTS = [
     'oauthlib==2.1.0',
     'requests-oauthlib==1.1.0',
+    'cattrs==1.0.0',
     'alembic>=1.0, <2.0',
     'argcomplete~=1.10',
-    'attrs~=19.3',
+    'attrs==19.3.0',
     'cached_property~=1.5',
     'cattrs~=1.0',
     'colorlog==4.0.2',
