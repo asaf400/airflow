@@ -546,6 +546,8 @@ EXTRAS_REQUIREMENTS = {
 # DEPENDENCIES_EPOCH_NUMBER in the Dockerfile.ci
 #####################################################################################################
 INSTALL_REQUIREMENTS = [
+    'oauthlib==2.1.0',
+    'requests-oauthlib==1.1.0',
     'alembic>=1.0, <2.0',
     'argcomplete~=1.10',
     'attrs~=19.3',
