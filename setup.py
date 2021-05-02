@@ -131,7 +131,6 @@ def git_version(version_):
     and the latter with a 'dev0' prefix. Following the prefix will be a sha of the current
     branch head. Finally, a "dirty" suffix is appended to indicate that uncommitted
     changes are present.
-
     :param str version_: Semver version
     :return: Found Airflow version in Git repo
     :rtype: str
@@ -162,7 +161,6 @@ def git_version(version_):
 def write_version(filename=os.path.join(*[my_dir, "airflow", "git_version"])):
     """
     Write the Semver version + git hash to file, e.g. ".dev0+2f635dc265e78db6708f59f68e8009abb92c1e65".
-
     :param str filename: Destination file to write
     """
     text = "{}".format(git_version(version))
@@ -674,4 +672,3 @@ if __name__ == "__main__":
             "will be the last release series to support Python 2\n"
         )
     do_setup()
-
